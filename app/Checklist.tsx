@@ -18,6 +18,7 @@ import { Progress } from "@/components/ui/progress";
 import { Separator } from "@/components/ui/separator";
 import { SidebarInset, SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -192,6 +193,14 @@ export default function Checklist() {
   const mustItems = SECTIONS.flatMap((sec) => sec.items.filter((i) => i.mustTest));
   const mustTotal = mustItems.length;
   const mustDone = mustItems.filter((i) => data.results[i.id]).length;
+
+  const filterOptions: { value: Filter; label: string; count?: string | number }[] = [
+    { value: "all", label: "All" },
+    { value: "must", label: "Must Test", count: `${mustDone}/${mustTotal}` },
+    { value: "untested", label: "Untested", count: TOTAL_ITEMS - tested },
+    { value: "pass", label: "Passed", count: passed },
+    { value: "fail", label: "Failed", count: failed },
+  ];
 
   const matches = (item: ChecklistItem) => {
     const r = data.results[item.id];
@@ -376,20 +385,32 @@ export default function Checklist() {
           </Card>
 
           <div className="space-y-3">
-            <div>
-              <Tabs value={filter} onValueChange={(v) => setFilter(v as Filter)}>
-                <TabsList>
-                  <TabsTrigger value="all">All</TabsTrigger>
-                  <TabsTrigger value="must">
-                    <Flame className="text-primary" />
-                    Must Test <span className="text-muted-foreground tabular-nums">{mustDone}/{mustTotal}</span>
+            {/* Phones: a dropdown. Larger screens: tabs. */}
+            <Select value={filter} onValueChange={(v) => setFilter(v as Filter)}>
+              <SelectTrigger className="w-full sm:hidden" aria-label="Filter tests">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {filterOptions.map((o) => (
+                  <SelectItem key={o.value} value={o.value}>
+                    {o.value === "must" && <Flame className="text-primary" />}
+                    {o.label}
+                    {o.count !== undefined && <span className="text-muted-foreground tabular-nums">{o.count}</span>}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <Tabs value={filter} onValueChange={(v) => setFilter(v as Filter)} className="hidden sm:flex">
+              <TabsList>
+                {filterOptions.map((o) => (
+                  <TabsTrigger key={o.value} value={o.value}>
+                    {o.value === "must" && <Flame className="text-primary" />}
+                    {o.label}
+                    {o.count !== undefined && <span className="text-muted-foreground tabular-nums">{o.count}</span>}
                   </TabsTrigger>
-                  <TabsTrigger value="untested">Untested <span className="text-muted-foreground tabular-nums">{TOTAL_ITEMS - tested}</span></TabsTrigger>
-                  <TabsTrigger value="pass">Passed <span className="text-muted-foreground tabular-nums">{passed}</span></TabsTrigger>
-                  <TabsTrigger value="fail">Failed <span className="text-muted-foreground tabular-nums">{failed}</span></TabsTrigger>
-                </TabsList>
-              </Tabs>
-            </div>
+                ))}
+              </TabsList>
+            </Tabs>
             <div className="flex flex-wrap gap-x-4 gap-y-1.5 text-xs text-muted-foreground">
               {PRIORITY_LABELS.map(([tag, label, style]) => (
                 <span key={tag} className="flex items-center gap-1.5">
