@@ -69,7 +69,7 @@ export function AppSidebar({ platformName, comingSoon, stats, passed, failed, te
                 <ClipboardCheck className="size-4" />
               </div>
               <span className="flex-1 truncate text-left text-lg font-semibold tracking-tight">
-                Gonit <span className="text-primary">QA</span>
+                Gonit QA
               </span>
             </SidebarMenuButton>
           </SidebarMenuItem>
